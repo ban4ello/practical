@@ -1,0 +1,110 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>On promises - Traffic-light</title>
+
+  <style>
+    #traffic-light .signal {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      /* opacity: 0.3; */
+      margin: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #traffic-light .counter {
+      font-size: 5em;
+    }
+
+    #red {
+      background-color: red;
+    }
+
+    #yellow {
+      background-color: yellow;
+    }
+
+    #green {
+      background-color: green;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="traffic-light">
+    <div id="red" class="signal">
+      <span class="counter"></span>
+    </div>
+
+    <div id="yellow" class="signal">
+      <span class="counter"></span>
+    </div>
+
+    <div id="green" class="signal">
+      <span class="counter"></span>
+    </div>
+  </div>
+
+  <script>
+    const timeOfWork = 10000; // ms
+    const timeOfWorkYellowLight = 3000; // ms
+    const opacityOfOnLight = 1; // on light
+    const opacityOfOffLight = 0.3; // off light
+
+    // set configuration of lights
+    (function () {
+      ['red', 'yellow', 'green'].forEach(color => {
+        const light = document.getElementById(color);
+        light.style.opacity = opacityOfOffLight;
+        light.style.color = '#fff';
+      });
+    }())
+
+    function startWorkOfLight(colorOfLight, timeOfWork) {
+      return new Promise((resolve) => {
+        let currentCounter = timeOfWork / 1000;
+        const light = document.getElementById(colorOfLight);
+        const yellowLight = document.getElementById('yellow');
+        
+        light.style.opacity = opacityOfOnLight;
+        light.children[0].innerHTML = currentCounter
+
+        const interval = setInterval(function () {
+          light.children[0].innerHTML = currentCounter - 1
+
+          if (currentCounter === timeOfWorkYellowLight / 1000 + 1) {
+            yellowLight.style.opacity = opacityOfOnLight;
+          }
+
+          if (currentCounter === 1) {
+            clearInterval(interval);
+            light.children[0].innerHTML = ''
+            light.style.opacity = opacityOfOffLight;
+            yellowLight.style.opacity = opacityOfOffLight;
+
+            resolve({ status: 'ok' });
+          }
+
+          currentCounter = --currentCounter
+        }, 1000);
+      });
+    }
+
+    
+    const start = async () => {
+      while (true) {
+        await startWorkOfLight('red', timeOfWork);
+        await startWorkOfLight('green', timeOfWork);
+      }
+      // start(); // recursion is needed for infinite execution of a function
+    };
+
+    start();
+  </script>
+</body>
+
+</html>
